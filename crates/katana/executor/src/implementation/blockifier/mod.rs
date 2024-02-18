@@ -108,7 +108,11 @@ impl<'a> abstraction::TransactionExecutor for StarknetVMProcessor<'a> {
             None
         };
 
+        let tx_ = TxWithHash::from(&tx);
         let res = utils::transact(tx, &mut state.0.write().inner, block_context, flags)?;
+
+        let receipt = res.receipt(tx_.as_ref());
+        self.transactions.push((tx_, Some(receipt)));
 
         if let Some((class_hash, compiled_class, sierra_class)) = class_declaration_artifacts {
             state.0.write().declared_classes.insert(class_hash, (compiled_class, sierra_class));
@@ -151,12 +155,7 @@ impl<'a> abstraction::BlockExecutor<'a> for StarknetVMProcessor<'a> {
         self.fill_block_env_from_header(&block.header);
 
         for tx in block.body {
-            let tx_ = TxWithHash::from(&tx);
-
-            let res = self.execute(tx)?;
-            let receipt = res.receipt(tx_.as_ref());
-
-            self.transactions.push((tx_, Some(receipt)));
+            let _ = self.execute(tx)?;
         }
 
         Ok(())

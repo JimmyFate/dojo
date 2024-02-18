@@ -8,7 +8,7 @@ version.workspace = true
 
 [dependencies]
 katana-db = { path = "../storage/db" }
-katana-executor = { workspace = true, features = [ "blockifier" ] }
+katana-executor.workspace = true
 katana-primitives = { path = "../primitives" }
 katana-provider = { path = "../storage/provider" }
 katana-tasks.workspace = true

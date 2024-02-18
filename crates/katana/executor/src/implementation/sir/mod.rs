@@ -148,8 +148,13 @@ impl<'a> TransactionExecutor for StarknetVMProcessor<'a> {
             None
         };
 
+        let tx_ = TxWithHash::from(&tx);
+
         let gas = 0;
         let res = utils::transact(tx, &mut state.0.write().inner, block_context, gas, flags)?;
+
+        let receipt = res.receipt(tx_.as_ref());
+        self.transactions.push((tx_, Some(receipt)));
 
         if let Some((class_hash, compiled_class, sierra_class)) = class_declaration_artifacts {
             state.0.write().declared_classes.insert(class_hash, (compiled_class, sierra_class));
@@ -198,12 +203,7 @@ impl<'a> BlockExecutor<'a> for StarknetVMProcessor<'a> {
         self.fill_block_env_from_header(&block.header);
 
         for tx in block.body {
-            let tx_ = TxWithHash::from(&tx);
-
-            let res = self.execute(tx)?;
-            let receipt = res.receipt(tx_.as_ref());
-
-            self.transactions.push((tx_, Some(receipt)));
+            let _ = self.execute(tx)?;
         }
 
         Ok(())
@@ -211,11 +211,11 @@ impl<'a> BlockExecutor<'a> for StarknetVMProcessor<'a> {
 
     fn take_execution_output(&mut self) -> ExecutorResult<ExecutionOutput> {
         let transactions = std::mem::take(&mut self.transactions);
-        let state = &mut self.state.0.write().inner;
+        let state = &mut self.state.0.write();
 
-        let state_changes = std::mem::take(state.cache_mut());
+        let state_changes = std::mem::take(state.inner.cache_mut());
         let state_diffs = utils::state_diff_from_state_cache(state_changes);
-        let compiled_classes = std::mem::take(&mut self.state.0.write().declared_classes);
+        let compiled_classes = std::mem::take(&mut state.declared_classes);
 
         let nonce_updates: HashMap<ContractAddress, FieldElement> = state_diffs
             .address_to_nonce()

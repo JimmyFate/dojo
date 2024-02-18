@@ -31,7 +31,7 @@ url.workspace = true
 assert_matches = "1.5.0"
 
 [features]
-default = [ "blockifier", "jemalloc", "messaging" ]
+default = [ "jemalloc", "messaging", "sir" ]
 
 blockifier = [ "katana-executor/blockifier" ]
 sir = [ "katana-executor/sir" ]
