@@ -85,8 +85,8 @@ pub fn handle_model_struct(
             "
             impl $type_name$Model of dojo::model::Model<$type_name$> {
                 #[inline(always)]
-                fn name(self: @$type_name$) -> felt252 {
-                    '$type_name$'
+                fn name_hash(self: @$type_name$) -> felt252 {
+                    selector!(\"$type_name$\")
                 }
 
                 #[inline(always)]
@@ -134,8 +134,8 @@ pub fn handle_model_struct(
 
                 #[abi(embed_v0)]
                 impl DojoModelImpl of dojo::model::IDojoModel<ContractState>{
-                    fn name(self: @ContractState) -> felt252 {
-                        '$type_name$'
+                    fn name_hash(self: @ContractState) -> felt252 {
+                        selector!(\"$type_name$\")
                     }
 
                     fn unpacked_size(self: @ContractState) -> usize {
